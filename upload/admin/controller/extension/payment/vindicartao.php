@@ -3,6 +3,7 @@ class ControllerExtensionPaymentVindicartao extends Controller {
 	private $error = array();
 
 	public function index() {
+		$this->vindi = new VindiApi($this->registry);
 		$this->load->language('extension/payment/vindicartao');
 
 		$this->document->setTitle($this->language->get('heading_title'));
@@ -58,7 +59,9 @@ class ControllerExtensionPaymentVindicartao extends Controller {
 		$data['button_cancel'] = $this->language->get('button_cancel');
 		
 		$data['murl'] = 'https://www.opencart.com/index.php?route=marketplace/extension/info&extension_id=42088';
-		$data['atual'] = $this->checkForUpdate();
+		$data['module_name'] = "Vindi Pagamentos";
+
+		$data['atual'] = $this->vindi->checkUpdate();
 
 		if (isset($this->error['warning'])) {
 			$data['error_warning'] = $this->error['warning'];
@@ -151,12 +154,6 @@ class ControllerExtensionPaymentVindicartao extends Controller {
 			$data['payment_vindicartao_raz'] = $this->request->post['payment_vindicartao_raz'];
 		} else {
 			$data['payment_vindicartao_raz'] = $this->config->get('payment_vindicartao_raz');
-		}
-		
-		if (isset($this->request->post['payment_vindicartao_type'])) {
-			$data['payment_vindicartao_type'] = $this->request->post['payment_vindicartao_type'];
-		} else {
-			$data['payment_vindicartao_type'] = $this->config->get('payment_vindicartao_type');
 		}
 		
 		if (isset($this->request->post['payment_vindicartao_number'])) {
@@ -267,37 +264,6 @@ class ControllerExtensionPaymentVindicartao extends Controller {
 		$data['footer'] = $this->load->controller('common/footer');
 
 		$this->response->setOutput($this->load->view('extension/payment/vindicartao', $data));
-	}
-	
-	public function checkForUpdate() {
-        $ver = 0;
-		$url = base64_decode('aHR0cHM6Ly93d3cub3BlbmNhcnRtYXN0ZXIuY29tLmJyL21vZHVsZS92ZXJzaW9uLw==');
-        $json_convert  = array('module' => 'vindicartao');
-
-        $soap_do = curl_init();
-        curl_setopt($soap_do, CURLOPT_URL, $url);
-        curl_setopt($soap_do, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($soap_do, CURLOPT_TIMEOUT,        10);
-        curl_setopt($soap_do, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($soap_do, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt($soap_do, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($soap_do, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($soap_do, CURLOPT_POST,           true );
-        curl_setopt($soap_do, CURLOPT_POSTFIELDS,     $json_convert);
-
-        $response = curl_exec($soap_do); 
-        curl_close($soap_do);
-        $resposta = json_decode($response, true);
-		
-		if (version_compare($resposta['mensagem'], $this->ver(), '>')) {
-        $ver = 1;
-        }
-		return $ver;
-	}
-	
-	public function ver() {
-		$ver = '1.0.0.0';
-		return $ver;
 	}
 
 	protected function validate() {

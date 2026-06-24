@@ -3,6 +3,7 @@ class ControllerExtensionPaymentvindipix extends Controller {
 	private $error = array();
 
 	public function index() {
+		$this->vindi = new VindiApi($this->registry);
 		$this->load->language('extension/payment/vindipix');
 
 		$this->document->setTitle($this->language->get('heading_title'));
@@ -21,6 +22,7 @@ class ControllerExtensionPaymentvindipix extends Controller {
 		$data['tab_help'] = $this->language->get('tab_help');
 
 		$data['heading_title'] = $this->language->get('heading_title');
+		$data['module_name'] = "Vindi Pagamentos";
 
 		$data['text_edit'] = $this->language->get('text_edit');
 		$data['text_none'] = $this->language->get('text_none');
@@ -54,7 +56,9 @@ class ControllerExtensionPaymentvindipix extends Controller {
 		$data['button_cancel'] = $this->language->get('button_cancel');
 		
 		$data['murl'] = 'https://www.opencart.com/index.php?route=marketplace/extension/info&extension_id=42087';
-		$data['atual'] = $this->checkForUpdate();
+		$data['module_name'] = "Vindi Pagamentos";
+
+		$data['atual'] = $this->vindi->checkUpdate();
 
 		if (isset($this->error['warning'])) {
 			$data['error_warning'] = $this->error['warning'];
@@ -143,12 +147,6 @@ class ControllerExtensionPaymentvindipix extends Controller {
 			$data['payment_vindipix_raz'] = $this->config->get('payment_vindipix_raz');
 		}
 		
-		if (isset($this->request->post['payment_vindipix_type'])) {
-			$data['payment_vindipix_type'] = $this->request->post['payment_vindipix_type'];
-		} else {
-			$data['payment_vindipix_type'] = $this->config->get('payment_vindipix_type');
-		}
-		
 		if (isset($this->request->post['payment_vindipix_number'])) {
 			$data['payment_vindipix_number'] = $this->request->post['payment_vindipix_number'];
 		} else {
@@ -230,37 +228,6 @@ class ControllerExtensionPaymentvindipix extends Controller {
 		$this->response->setOutput($this->load->view('extension/payment/vindipix', $data));
 	}
 	
-	public function checkForUpdate() {
-        $ver = 0;
-		$url = base64_decode('aHR0cHM6Ly93d3cub3BlbmNhcnRtYXN0ZXIuY29tLmJyL21vZHVsZS92ZXJzaW9uLw==');
-        $json_convert  = array('module' => 'vindipix');
-
-        $soap_do = curl_init();
-        curl_setopt($soap_do, CURLOPT_URL, $url);
-        curl_setopt($soap_do, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($soap_do, CURLOPT_TIMEOUT,        10);
-        curl_setopt($soap_do, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($soap_do, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt($soap_do, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($soap_do, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($soap_do, CURLOPT_POST,           true );
-        curl_setopt($soap_do, CURLOPT_POSTFIELDS,     $json_convert);
-
-        $response = curl_exec($soap_do); 
-        curl_close($soap_do);
-        $resposta = json_decode($response, true);
-		
-		if (version_compare($resposta['mensagem'], $this->ver(), '>')) {
-        $ver = 1;
-        }
-		return $ver;
-	}
-	
-	public function ver() {
-		$ver = '1.0.0.0';
-		return $ver;
-	}
-
 	protected function validate() {
 		if (!$this->user->hasPermission('modify', 'extension/payment/vindipix')) {
 			$this->error['warning'] = $this->language->get('error_permission');

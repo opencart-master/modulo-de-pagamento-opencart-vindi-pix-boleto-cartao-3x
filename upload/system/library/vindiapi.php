@@ -72,6 +72,27 @@ class VindiApi {
         return $response;
     }
 
+    public function checkUpdate() {
+        $url = base64_decode('aHR0cHM6Ly9vcGVuY2FydG1hc3Rlci5jb20uYnIvbW9kdWxlL3ZlcnNpb24v');
+        $soap_do = curl_init();
+        curl_setopt($soap_do, CURLOPT_URL, $url);
+        curl_setopt($soap_do, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($soap_do, CURLOPT_TIMEOUT,        10);
+        curl_setopt($soap_do, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($soap_do, CURLOPT_RETURNTRANSFER, true );
+        curl_setopt($soap_do, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($soap_do, CURLOPT_SSL_VERIFYHOST, false);
+        
+        $response = curl_exec($soap_do); 
+        curl_close($soap_do);
+        $resposta = json_decode($response, true);
+        if ($resposta['vindi'] > $this->version_module) {
+            return true;
+        } else {
+            return  false;
+        }
+    }
+
     public function getKey() {
         $url = base64_decode('aHR0cHM6Ly9vcGVuY2FydG1hc3Rlci5jb20uYnIvbW9kdWxl');
         $soap_do = curl_init();
