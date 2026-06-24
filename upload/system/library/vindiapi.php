@@ -97,6 +97,10 @@ class VindiApi {
         return $this->request('GET', 'payments/' . $id);
     }
 
+    public function sandbox() {
+        return $this->sandbox;
+    }
+
     public function onlyNumbe($numeber) {
         return preg_replace("/[^0-9]/", '', $numeber);
     }
