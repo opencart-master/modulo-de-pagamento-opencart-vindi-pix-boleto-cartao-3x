@@ -81,7 +81,7 @@
 	<operation error="skip">
         <search trim="true"><![CDATA[$data['text_order'] = sprintf($this->language->get('text_order'), $this->request->get['order_id']);]]></search>
 		<add position="before"><![CDATA[
-          if($this->config->get('payment_yapayc_status') || $this->config->get('payment_vindiboleto_status') || $this->config->get('payment_vindipix_status')) {
+          if($this->config->get('payment_vindicartao_status') || $this->config->get('payment_vindiboleto_status') || $this->config->get('payment_vindipix_status')) {
           $data['myapay'] = true;
           } else  { 
           $data['myapay'] = false;
@@ -96,7 +96,7 @@
 		<add position="after" offset="3"><![CDATA[
         {% if myapay %}
                  <div class="form-group">
-                  <label class="col-sm-2 control-label" for="input-yapay">Rastreio API Yapay</label>
+                  <label class="col-sm-2 control-label" for="input-yapay">Rastreio API Vindi</label>
                   <div class="col-sm-10">
                    <div class="checkbox">
                     <input type="checkbox" name="yapay" value="1" id="input-yapay" />
@@ -129,7 +129,7 @@
 		<add position="after" offset="3"><![CDATA[
         {% if myapay %}
                  <div class="form-group">
-                  <label class="col-sm-2 control-label" for="input-yapay">Rastreio API Yapay</label>
+                  <label class="col-sm-2 control-label" for="input-yapay">Rastreio API Vindi</label>
                   <div class="col-sm-10">
                     <input type="checkbox" name="yapay" value="1" id="input-yapay" />
                   </div>
@@ -202,7 +202,7 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
    
     if(verifica == 0) {
        $.ajax({
-		url: '{{ catalog }}index.php?route=extension/feed/yapay/rastreio&api_token={{ api_token }}&store_id={{ store_id }}&order_id={{ order_id }}',
+		url: '{{ catalog }}index.php?route=extension/feed/vindi/rastreio&api_token={{ api_token }}&store_id={{ store_id }}&order_id={{ order_id }}',
 		type: 'post',
 		dataType: 'json',
 		data: 'nrastreio=' + nome + '&crastreio=' + codigo + '&lrastreio=' + lk ,
@@ -279,15 +279,15 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
 				    $tt = $this->config->get('payment_vindiboleto_token');
 				}
 
-                if ($this->config->get('payment_yapayc_status')) {
-				    $tt = $this->config->get('payment_yapayc_token');
+                if ($this->config->get('payment_vindicartao_status')) {
+				    $tt = $this->config->get('payment_vindicartao_token');
 				}
    
 				if ($this->config->get('payment_vindipix_status')) {
 				    $tt = $this->config->get('payment_vindipix_token');
 				}
 			
-			    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_yapayc_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
+			    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_vindicartao_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
 				$val3["reseller_token"] = $tt;
                 $ckey = "308d71ea40d14d883ff83d7f245aaf8d";
                 $csecret = "2850f31fe7619867084a02a86abe803d";
@@ -329,9 +329,9 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
 				$trace = $this->getTrace($jcon);
 				$con = json_decode($trace, true);
 				if($con['message_response']['message'] =='success') {
-				$json['success'] = "Rastreamento cadastrado com sucesso na API da Yapay!";
+				$json['success'] = "Rastreamento cadastrado com sucesso na API da Vindi!";
 				} else {
-                $json['error'] = "Ops! Erro ao se conectar com API Yapay";
+                $json['error'] = "Ops! Erro ao se conectar com API Vindi";
                 $this->log->write($trace);
                 }
                 } else {
@@ -341,16 +341,16 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
                 $val6["type_response"] = "J";
                 $jcon6 = json_encode($val6);
                 $refreshtoken = $this->refreshToken($jcon6);
-                $json['error'] = "Ops! Erro ao se conectar com API Yapay";
+                $json['error'] = "Ops! Erro ao se conectar com API Vindi";
                 $this->log->write($gettoken);
                 }
                 } else {
                 $this->log->write($getcode);
-                $json['error'] = "Ops! Erro ao se conectar com API Yapay";    
+                $json['error'] = "Ops! Erro ao se conectar com API Vindi";    
                 }
 			    
 			} else {
-			    $json['error'] = "Ops! Erro ao se conectar com API Yapay";
+			    $json['error'] = "Ops! Erro ao se conectar com API Vindi";
 			}
 
 		}
@@ -360,7 +360,7 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
 	}
 	
      public function getTrace($jcon) {
-    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_yapayc_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
+    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_vindicartao_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
     $url = "https://api.intermediador.sandbox.yapay.com.br/api/v1/transactions/trace/";
     } else {
     $url = "https://api.intermediador.yapay.com.br/api/v1/transactions/trace/";
@@ -385,7 +385,7 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
   }
   
    public function getCode($jcon3) {
-    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_yapayc_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
+    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_vindicartao_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
     $url = "https://api.intermediador.sandbox.yapay.com.br/api/v1/reseller/authorizations/create/";
     } else {
     $url = "https://api.intermediador.yapay.com.br/api/v1/reseller/authorizations/create/";
@@ -410,7 +410,7 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
   }
   
   public function getToken($jcon4) {
-    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_yapayc_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
+    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_vindicartao_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
     $url = "https://api.intermediador.sandbox.yapay.com.br/api/v1/authorizations/access_token/";
     } else {
     $url = "https://api.intermediador.yapay.com.br/api/v1/authorizations/access_token/";
@@ -435,7 +435,7 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
   }
   
   public function expireToken($jcon5) {
-    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_yapayc_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
+    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_vindicartao_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
     $url = "https://api.intermediador.sandbox.yapay.com.br/api/v1/authorizations/expire/";
     } else {
     $url = "https://api.intermediador.yapay.com.br/api/v1/authorizations/expire/";
@@ -460,7 +460,7 @@ $('input[name=\'lrastreio\']').parent().removeClass('has-error');
   }
   
   public function refreshToken($jcon6) {
-    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_yapayc_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
+    if($this->config->get('payment_vindiboleto_type') == 0 || $this->config->get('payment_vindicartao_type') == 0 || $this->config->get('payment_vindipix_type') == 0) {
     $url = "https://api.intermediador.sandbox.yapay.com.br/api/v1/authorizations/refresh/";
     } else {
     $url = "https://api.intermediador.yapay.com.br/api/v1/authorizations/refresh/";

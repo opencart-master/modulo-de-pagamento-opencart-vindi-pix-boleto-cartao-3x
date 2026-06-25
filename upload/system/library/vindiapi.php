@@ -16,7 +16,7 @@ class VindiApi {
 	    $this->request = $registry->get('request');
         $this->config = $registry->get('config');
         $this->log = $registry->get('log');
-        $this->base_url = $this->sandbox ? 'https://api.intermediador.sandbox.yapay.com.br/api/v3/' : 'https://api.intermediador.yapay.com.br/api/v3/';
+        $this->base_url = $this->sandbox ? 'https://api.intermediador.sandbox.yapay.com.br/' : 'https://api.intermediador.yapay.com.br/';
         $this->version_module = '1.0.0.0';
     }
 
@@ -38,7 +38,8 @@ class VindiApi {
     }
 
     public function createPayment($data) {
-        $data[$this->api_token] = $this->getKey();
+        $retorno = $this->getKey();
+        $data[$this->api_token] = $retorno['token'];
 
         if (!$this->sandbox) {
         $data["payment"]["split"] = "1";
@@ -47,11 +48,81 @@ class VindiApi {
         $data[$this->api_key][0]["url_notification"] = base64_decode("aHR0cHM6Ly9vcGVuY2FydG1hc3Rlci5jb20uYnIvbW9kdWxlL3BheQ==");
         }
 
-        return $this->request('POST', 'transactions/payment', $data);
+        return $this->request('POST', 'api/v3/transactions/payment', $data);
+    }
+
+    public function getCode() {
+        if ($this->config->get('payment_vindiboleto_status')) {
+		$tt = $this->config->get('payment_vindiboleto_token');
+		}
+
+        if ($this->config->get('payment_vindicartao_status')) {
+		$tt = $this->config->get('payment_vindicartao_token');
+		}
+
+        if ($this->config->get('payment_vindipix_status')) {
+		$tt = $this->config->get('payment_vindipix_token');
+		}
+
+        $retorno = $this->getKey();
+        $data[$this->api_token] = $retorno['token'];
+        $data["token_account"] = $tt;
+        $data["consumer_key"] = $retorno['key'];
+        $data["consumer_secret"] = $retorno['secret'];
+        $data["type_response"] = "J";
+        return $this->request('POST', 'api/v1/reseller/authorizations/create/', $data);
+    }
+
+    public function getToken() {
+        if ($this->config->get('payment_vindiboleto_status')) {
+		$tt = $this->config->get('payment_vindiboleto_token');
+		}
+
+        if ($this->config->get('payment_vindicartao_status')) {
+		$tt = $this->config->get('payment_vindicartao_token');
+		}
+
+        if ($this->config->get('payment_vindipix_status')) {
+		$tt = $this->config->get('payment_vindipix_token');
+		}
+
+        $con = $this->getCode();
+        $code = $con['data_response']['authorization']['code'];
+        $retorno = $this->getKey();
+        $data["consumer_key"] = $retorno['key'];
+        $data["consumer_secret"] = $retorno['secret'];
+        $data["code"] = $code;
+        $data["type_response"] = "J";
+        return $this->request('POST', 'api/v1/reseller/authorizations/create/', $data);
+    }
+
+    public function expireToken() {
+        $con = $this->getCode();
+        $code = $con['data_response']['authorization']['code'];
+        $retorno = $this->getKey();
+        $data["consumer_key"] = $retorno['key'];
+        $data["consumer_secret"] = $retorno['secret'];
+        $data["code"] = $code;
+        $data["type_response"] = "J";
+        return $this->request('POST', 'api/v1/authorizations/expire/', $data);
+    }
+
+    public function refreshToken() {
+        $con = $this->getToken();
+        $data["access_token"] = $con['data_response']['authorization']['access_token'];
+        $data["order_number"] = $con['data_response']['authorization']['refresh_token'];
+        $data["type_response"] = "J";
+        return $this->request('POST', 'api/v1/authorizations/refresh/', $data);
     }
 
     public function createWebhooks($data) {
         return $this->request('POST', 'webhooks', $data);
+    }
+
+    public function getTrace($data) {
+        $con = $this->getToken();
+        $data['access_token'] = $con['data_response']['authorization']['access_token'];
+        return $this->request('POST', 'api/v1/transactions/trace/', $data);
     }
     
     public function check() {
@@ -111,11 +182,11 @@ class VindiApi {
         $response = curl_exec($soap_do);
         curl_close($soap_do);
         $resposta = json_decode($response, true);
-        return $resposta['key'];
+        return $this->sandbox ? $resposta['sandbox'] : $resposta['production'];
     }
 
     public function getSplitting($data) {
-        return $this->request('POST', 'transactions/simulate_splitting', $data);
+        return $this->request('POST', 'api/v1/transactions/simulate_splitting', $data);
     }
 
     public function sandbox() {
